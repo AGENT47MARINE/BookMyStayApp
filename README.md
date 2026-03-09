@@ -1,108 +1,213 @@
-#BookMyStayApp
-This project presents the design and implementation of a Hotel Booking Management System to illustrate the practical application of Core Java and fundamental data structures in real-world scenarios. The system is developed incrementally, with each use case introducing a specific concept that addresses common software engineering challenges such as fair request handling, inventory consistency, and prevention of double-booking. By focusing on core logic and system behavior rather than user interface concerns, the project enables learners to understand not only how data structures are used, but why they are essential in scalable and maintainable software systems.
+# BookMyStayApp
 
-Use Case 1:
-Application Entry & Welcome Message
+## Overview
+**BookMyStayApp** is a Hotel Booking Management System designed to demonstrate the practical application of **Core Java** and **fundamental data structures** in real-world software systems.
 
-Goal:
+The project is built incrementally using multiple **use cases**, where each use case introduces a specific programming concept. These concepts address common software engineering challenges such as:
 
+- Fair request handling  
+- Inventory consistency  
+- Prevention of double-booking  
+
+The focus of the project is on **core logic and system behavior**, rather than user interface development. This approach allows learners to understand not only **how data structures are used**, but also **why they are essential** for building scalable and maintainable software systems.
+
+---
+
+# Use Case 1: Application Entry & Welcome Message
+
+## Goal
 Establish a clear and predictable starting point for the Hotel Booking application by demonstrating how a Java program begins execution and produces console output.
 
-Actor:
+## Actor
+**User** – runs the application from the command line or an IDE.
 
-User – runs the application from the command line or IDE.
+## Flow
+1. The user runs the application.
+2. The **Java Virtual Machine (JVM)** invokes the `main()` method.
+3. The application prints a welcome message along with the **application name and version**.
+4. The application terminates.
 
-Flow:
+---
 
-User runs the application.
+## Key Concepts Used
 
-JVM invokes the main() method.
+### Class
+Even the simplest Java application must be defined inside a **class**.  
+The class acts as a container for application behavior and marks the logical boundary of the program.
 
-Application prints a welcome message along with the application name and version.
+### main() Method
+The `main()` method is the **entry point** of every standalone Java application.  
+The JVM looks specifically for the method signature:
 
-Application terminates.
+```java
+public static void main(String[] args)
+```
 
-Key Concepts Used
+### static Keyword
+The `main()` method is declared `static` so it can be executed **without creating an object** of the class. This allows the JVM to start program execution directly.
 
-Class - Even the simplest Java application must be defined inside a class. The class acts as a container for application behavior and marks the logical boundary of the program.
+### Console Output
+`System.out.println()` is used to send text output to the console.  
+This is the simplest way to observe program behavior during early development.
 
-main() Method - The main method is the entry point of every standalone Java application. The JVM looks specifically for the method signature: public static void main(String[] args).
+### String Literals
+Text enclosed in double quotes such as:
 
-static Keyword - The main() method is declared static so that it can be executed without creating an object of the class. This allows the JVM to start execution directly.
+```
+"Hotel Booking System v1.0"
+```
 
-Console Output - System.out.println() is used to send text output to the console. This is the simplest way to observe program behavior during early development.
+is treated as a **String literal**, which is immutable and stored in the **String Pool**.
 
-String Literals - Text enclosed in double quotes (e.g., "Hotel Booking System v1.0") is treated as a String literal, which is immutable and stored in the String pool.
+### Method Invocation
+Calling `println()` on the `out` object demonstrates how **methods are invoked on objects** in Java.
 
-Method Invocation - Calling println() on the out object demonstrates how methods are invoked on objects in Java, even in basic programs.
+### Application Flow
+Execution proceeds **top to bottom inside the `main()` method** unless altered by control structures.  
+This reinforces the concept of **linear program execution**.
 
-Application Flow - Execution proceeds top to bottom inside the main() method unless altered by control structures. This use case reinforces linear execution flow. JavaDoc Comments - JavaDoc comments are used to document the class and its purpose. They serve as the foundation for professional code documentation. JavaDoc Annotations - Tags such as @author and @version provide metadata about the class and help maintain traceability as the system evolves.
+### JavaDoc Comments
+JavaDoc comments are used to **document classes and methods**. They form the foundation for professional code documentation.
 
-Key Requirements
+### JavaDoc Annotations
+Tags such as:
 
-Create a Java class that represents the application entry point. Implement the main() method using the correct signature. Print a welcome message to the console. Display the application name and version information. Use JavaDoc comments to document the class and its intent. Ensure the program executes and terminates without errors.
+```
+@author
+@version
+```
 
-Key Benefits
+provide metadata about the class and help maintain traceability as the system evolves.
 
-Clear and predictable application startup behavior Single, well-defined execution entry point Improved debuggability during early development Please refer to the code snapshot below to write your code
+---
 
-Use Case 2:Basic Room Types & Static Availability
-Goal:
+## Key Requirements
+- Create a Java class that represents the **application entry point**.
+- Implement the `main()` method using the **correct signature**.
+- Print a **welcome message** to the console.
+- Display the **application name and version information**.
+- Use **JavaDoc comments** to document the class and its purpose.
+- Ensure the program executes and **terminates without errors**.
 
-Introduce object modeling through inheritance and abstraction before introducing data structures, allowing students to focus on domain design rather than optimization.
+---
 
-Actor:
+## Key Benefits
+- Clear and predictable **application startup behavior**
+- Single, well-defined **execution entry point**
+- Improved **debuggability during early development**
 
-User – runs the application to view predefined room types and their availability.
+---
 
-Flow:
+# Use Case 2: Basic Room Types & Static Availability
 
-User runs the application.
+## Goal
+Introduce **object-oriented modeling** through **inheritance and abstraction** before introducing data structures. This allows learners to focus on **domain design** rather than optimization.
 
-Room objects representing different room types are created.
+---
 
-Availability for each room type is stored using simple variables.
+## Actor
+**User** – runs the application to view predefined room types and their availability.
 
-Room details and availability information are printed to the console.
+---
 
-Application terminates.
+## Flow
+1. The user runs the application.
+2. Room objects representing **different room types** are created.
+3. Availability for each room type is stored using **simple variables**.
+4. Room details and availability information are **printed to the console**.
+5. The application terminates.
 
-Key Concepts Used
+---
 
-Abstract Class - An abstract class is used to represent a generalized concept that should not be instantiated directly. The Room class defines common attributes and behavior shared by all room types while enforcing a consistent structure.
+## Key Concepts Used
 
-Inheritance - Concrete room classes (SingleRoom, DoubleRoom, SuiteRoom) extend the abstract Room class. This allows shared properties to be reused while enabling specialization for each room type.
+### Abstract Class
+An **abstract class** represents a generalized concept that should **not be instantiated directly**.
 
-Polymorphism - Room objects are referenced using the Room type, enabling uniform handling of different room implementations. This prepares the system for future extensibility without changing client code.
+The `Room` class defines:
+- common attributes
+- shared behavior
 
-Encapsulation - Room attributes such as number of beds, size, and price are encapsulated within the Room class. This ensures that room characteristics are controlled and modified only through defined behavior.
+while enforcing a **consistent structure** for all room types.
 
-Static Availability Representation - Room availability is stored using simple variables rather than data structures. This intentionally highlights the limitations of hardcoded and scattered state management.
+---
 
-Separation of Domain and State - Room objects represent what a room is, while availability variables represent current system state. This distinction becomes critical when inventory management is introduced later.
+### Inheritance
+Concrete room classes such as:
 
-Key Requirements
+- `SingleRoom`
+- `DoubleRoom`
+- `SuiteRoom`
 
-Define an abstract Room class with common attributes.
+extend the abstract `Room` class.
 
-Create concrete room classes for Single, Double, and Suite rooms.
+This allows shared properties to be **reused** while enabling **specialization** for each room type.
 
-Initialize room objects in the application entry point.
+---
 
-Store room availability using individual variables.
+### Polymorphism
+Room objects are referenced using the **Room type**, allowing the system to handle different room implementations uniformly.
 
-Display room details and availability to the console.
+This prepares the system for **future extensibility** without modifying client code.
 
-Key Benefits
+---
 
-Clear introduction to object-oriented domain modeling
+### Encapsulation
+Room attributes such as:
 
-Demonstrates inheritance and abstraction in a real-world context
+- number of beds
+- room size
+- price
 
-Establishes a strong foundation for later inventory refactoring
+are encapsulated inside the `Room` class.
 
-Drawbacks of Previous Use Case
+This ensures that room characteristics are **controlled and modified only through defined behavior**.
 
-Use Case 1 focused only on application startup and execution flow.
+---
 
-No domain modeling or business concepts were introduced, limiting system realism.
+### Static Availability Representation
+Room availability is stored using **simple variables instead of data structures**.
+
+This intentionally demonstrates the **limitations of hardcoded state management**, preparing the system for later refactoring.
+
+---
+
+### Separation of Domain and State
+The system separates:
+
+**Domain Objects**
+- Represent **what a room is**
+
+**State Variables**
+- Represent the **current system availability**
+
+This distinction becomes critical when **inventory management and data structures** are introduced later.
+
+---
+
+## Key Requirements
+- Define an **abstract `Room` class** with common attributes.
+- Create concrete room classes:
+  - `SingleRoom`
+  - `DoubleRoom`
+  - `SuiteRoom`
+- Initialize room objects in the **application entry point**.
+- Store availability using **individual variables**.
+- Display room details and availability in the **console output**.
+
+---
+
+## Key Benefits
+- Clear introduction to **object-oriented domain modeling**
+- Demonstrates **inheritance and abstraction** in a real-world context
+- Establishes a strong **foundation for future inventory refactoring**
+
+---
+
+## Drawbacks of Previous Use Case
+**Use Case 1** focused only on:
+
+- Application startup
+- Execution flow
+
+It did not introduce **domain modeling or business concepts**, limiting the realism of the system.
