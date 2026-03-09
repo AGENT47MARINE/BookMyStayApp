@@ -1,11 +1,15 @@
 /**
  * BookMyStay Application
- * Demonstrates room modeling using abstraction and inheritance.
+ * Demonstrates centralized inventory management using HashMap.
  *
  * @author AGENT47MARINE
- * @version 1.1.0
+ * @version 1.2.0
  */
 
+import java.util.HashMap;
+import java.util.Map;
+
+// Abstract Room class
 abstract class Room {
 
     protected String roomType;
@@ -18,6 +22,10 @@ abstract class Room {
         this.pricePerNight = pricePerNight;
     }
 
+    public String getRoomType() {
+        return roomType;
+    }
+
     public void displayDetails() {
         System.out.println("Room Type: " + roomType);
         System.out.println("Beds: " + beds);
@@ -25,6 +33,7 @@ abstract class Room {
     }
 }
 
+// Concrete Room Types
 class SingleRoom extends Room {
     public SingleRoom() {
         super("Single Room", 1, 1500);
@@ -43,34 +52,72 @@ class SuiteRoom extends Room {
     }
 }
 
+// Inventory Manager
+class RoomInventory {
+
+    private HashMap<String, Integer> inventory;
+
+    // Constructor initializes availability
+    public RoomInventory() {
+        inventory = new HashMap<>();
+
+        inventory.put("Single Room", 5);
+        inventory.put("Double Room", 3);
+        inventory.put("Suite Room", 2);
+    }
+
+    // Retrieve availability
+    public int getAvailability(String roomType) {
+        return inventory.getOrDefault(roomType, 0);
+    }
+
+    // Update availability
+    public void updateAvailability(String roomType, int newCount) {
+        inventory.put(roomType, newCount);
+    }
+
+    // Display inventory
+    public void displayInventory() {
+        System.out.println("\n--- Current Room Inventory ---");
+
+        for (Map.Entry<String, Integer> entry : inventory.entrySet()) {
+            System.out.println(entry.getKey() + " : " + entry.getValue() + " rooms available");
+        }
+    }
+}
+
+// Main Application
 public class BookMyStayApp {
 
     public static void main(String[] args) {
 
         // UC1 – Welcome Page
         System.out.println("=== Welcome to BookMyStay ===");
-        System.out.println("Hotel Booking System v1.1.0\n");
+        System.out.println("Hotel Booking System v1.2.0\n");
 
-        // UC2 – Room Modeling
+        // Room objects
         Room single = new SingleRoom();
         Room doubleRoom = new DoubleRoom();
         Room suite = new SuiteRoom();
 
-        int singleAvailable = 5;
-        int doubleAvailable = 3;
-        int suiteAvailable = 2;
+        // Inventory initialization
+        RoomInventory inventory = new RoomInventory();
 
-        System.out.println("Available Room Types:\n");
+        // Display room details
+        System.out.println("--- Room Details ---\n");
 
         single.displayDetails();
-        System.out.println("Available Rooms: " + singleAvailable + "\n");
+        System.out.println("Available: " + inventory.getAvailability(single.getRoomType()) + "\n");
 
         doubleRoom.displayDetails();
-        System.out.println("Available Rooms: " + doubleAvailable + "\n");
+        System.out.println("Available: " + inventory.getAvailability(doubleRoom.getRoomType()) + "\n");
 
         suite.displayDetails();
-        System.out.println("Available Rooms: " + suiteAvailable + "\n");
+        System.out.println("Available: " + inventory.getAvailability(suite.getRoomType()) + "\n");
 
-        System.out.println("Application Finished.");
+        // Show centralized inventory
+        inventory.displayInventory();
+
+        System.out.println("\nApplication Finished.");
     }
 }
