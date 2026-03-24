@@ -3,67 +3,64 @@
 This project presents the design and implementation of a Hotel Booking Management System to illustrate the practical application of Core Java and fundamental data structures in real-world scenarios. The system is developed incrementally, with each use case introducing a specific concept that addresses common software engineering challenges such as fair request handling, inventory consistency, and prevention of double-booking. By focusing on core logic and system behavior rather than user interface concerns, the project enables learners to understand not only how data structures are used, but why they are essential in scalable and maintainable software systems.
 
 
-Use Case 9: Error Handling & Validation
+Use Case 11: Concurrent Booking Simulation (Thread Safety)
 -
+**Goal:**
 
-**Goal:** 
-
-Strengthen system reliability by introducing structured validation and error handling, ensuring that invalid inputs and inconsistent states are detected and handled early.
+Demonstrate how concurrent access to shared resources can lead to inconsistent system state and show how synchronization ensures correctness under multi-user conditions.
 
 **Actor:**
 
-Guest – provides booking input that must be validated.
+Multiple Guests – submit booking requests concurrently.
 
-Invalid Booking Validator – validates input and system state before processing requests.
+Concurrent Booking Processor – processes booking requests in a multi-threaded environment.
 
 **Flow:**
 
-Guest provides booking input.
+Multiple guests submit booking requests simultaneously.
 
-System validates input values and system constraints.
+Requests are added to a shared booking queue.
 
-If validation fails, an error is raised immediately.
+Threads retrieve requests using synchronized access.
 
-A meaningful failure message is displayed.
+Room allocation and inventory updates are performed inside critical sections.
 
-The system prevents invalid state changes and continues running safely.
+The system completes allocations without conflicts or inconsistencies.
 
 **Key Concepts Used**
 
-Input Validation - Validation ensures that incoming data conforms to expected rules before processing. This prevents invalid or inconsistent data from entering the system.
+Race Conditions - Race conditions occur when multiple threads access and modify shared data simultaneously. The final system state becomes dependent on execution timing rather than logic.
 
-Custom Exceptions - Domain-specific exceptions are used to represent invalid booking scenarios. Custom exceptions make error causes explicit and improve code readability.
+Thread Safety - Thread safety ensures that shared resources behave correctly when accessed by multiple threads. This is critical in systems handling concurrent user actions.
 
-Fail-Fast Design - The system detects errors as early as possible and stops further processing. This avoids cascading failures and simplifies debugging.
+Shared Mutable State - The booking queue and inventory are shared across threads. Uncontrolled access to shared mutable data can corrupt system state.
 
-Guarding System State - Checks are performed before inventory updates or allocations. This ensures that critical state, such as availability counts, remains valid.
+Critical Sections - Critical sections are blocks of code that must be executed by only one thread at a time. Synchronization ensures exclusive access to these sections.
 
-Graceful Failure Handling - Errors are communicated clearly without crashing the application. This improves system usability and maintainability.
+Synchronized Access - Synchronization mechanisms are used to protect shared resources. This prevents interleaving operations that could lead to double allocation.
 
-Correctness over Happy Path - The system is designed to handle incorrect usage, not just ideal scenarios. This reflects real-world conditions where invalid input is common.
+Concurrency vs. Parallelism - Concurrency focuses on correctness when tasks overlap in time. This use case emphasizes correctness over performance optimization.
 
 **Key Requirements**
 
-Validate room types before processing bookings.
+Simulate multiple booking requests occurring at the same time.
 
-Prevent inventory from reaching invalid or negative values.
+Use shared data structures for booking requests and inventory.
 
-Throw and handle custom exceptions for invalid scenarios.
+Ensure inventory updates are performed in a thread-safe manner.
 
-Display clear and informative failure messages.
+Prevent double allocation under concurrent execution.
 
-Ensure the system remains stable after errors.
+Maintain consistent system state under load.
 
 **Key Benefits**
 
-Early detection of invalid system states
+Safe multi-user booking simulation
 
-Reduced risk of silent data corruption
+Correct room allocations under concurrent load
 
-More stable and predictable application behavior
+Foundation for building scalable, multi-user systems
 
 **Drawbacks of Previous Use Case**
 
-Use Case 8 focused on storing and reporting booking data but assumed valid input.
-
-Without validation, incorrect data could corrupt system state and reports.
+Earlier use cases assumed a single-threaded execution model. Such assumptions are unsafe in real production environments where concurrent access is common.
