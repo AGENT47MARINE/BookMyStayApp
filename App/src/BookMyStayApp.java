@@ -1,15 +1,15 @@
 import java.util.*;
 /**
  * BookMyStay Application
- *Use Case 9: Error Handling & Validation
+ Use Case 11: Concurrent Booking Simulation (Thread Safety)
  *
  * @author AGENT47MARINE
- * @version 1.9.0
+ * @version 1.11.0
  */
 
 public class BookMyStayApp {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         // =============================
         // Use Case 1: Application Entry
@@ -30,98 +30,231 @@ public class BookMyStayApp {
         RoomInventory inventory = new RoomInventory();
         inventory.setAvailability(singleRoom.getRoomType(), 2);
         inventory.setAvailability(doubleRoom.getRoomType(), 1);
-        inventory.setAvailability(suiteRoom.getRoomType(), 0);
+        inventory.setAvailability(suiteRoom.getRoomType(), 1);
 
         // ===================================
-        // Use Case 4: Room Search
-        // ===================================
-        RoomSearchService searchService = new RoomSearchService(inventory);
-        List<Room> rooms = Arrays.asList(singleRoom, doubleRoom, suiteRoom);
-
-        System.out.println("--- Room Availability ---");
-        searchService.performSearch(rooms);
-
-        // ===================================
-        // Use Case 5: Booking Queue
+        // Use Case 5: Booking Requests
         // ===================================
         BookingRequestQueue queue = new BookingRequestQueue();
 
         queue.enqueueRequest(new Reservation("R1", "Alice", "Suite Room"));
         queue.enqueueRequest(new Reservation("R2", "Bob", "Single Room"));
-        queue.enqueueRequest(new Reservation("R3", "Charlie", "Invalid Room"));
 
         // ===================================
-        // Use Case 9: Validation
-        // ===================================
-        InvalidBookingValidator validator = new InvalidBookingValidator();
-
-        // ===================================
-        // Use Case 6: Allocation with Validation
+        // Use Case 6: Allocation
         // ===================================
         RoomAllocationService allocationService = new RoomAllocationService(inventory);
 
-        System.out.println("\n--- Processing Bookings with Validation ---");
+        Map<String, Reservation> confirmedBookings = new HashMap<>();
+
+        System.out.println("\n--- Confirming Bookings ---");
 
         while (queue.hasPendingRequests()) {
 
             Reservation res = queue.dequeueRequest();
 
-            try {
+            boolean success = allocationService.processAllocation(res);
 
-                validator.validate(res, inventory);
-
-                allocationService.processAllocation(res);
-
-            } catch (InvalidBookingException e) {
-
-                System.out.println("ERROR: " + e.getMessage());
+            if (success) {
+                confirmedBookings.put(res.getReservationId(), res);
             }
         }
 
-        System.out.println("\n--- Final Inventory State ---");
+        // ===================================
+        // Use Case 8: Booking History
+        // ===================================
+        BookingHistory history = new BookingHistory();
+
+        for (Reservation res : confirmedBookings.values()) {
+            history.addReservation(res);
+        }
+
+        System.out.println("\n--- Booking History ---");
+
+        for (Reservation res : history.getReservations()) {
+            System.out.println(res);
+        }
+
+        // ===================================
+        // Use Case 10: Cancellation & Rollback
+        // ===================================
+        CancellationService cancellationService = new CancellationService(inventory);
+
+        System.out.println("\n--- Cancellation Process ---");
+
+        cancellationService.cancelBooking("R1", confirmedBookings, history);
+
+        System.out.println("\n--- Updated Booking History ---");
+
+        for (Reservation res : history.getReservations()) {
+            System.out.println(res);
+        }
+
+        System.out.println("\n--- Final Inventory ---");
         System.out.println("Single Room: " + inventory.getAvailability("Single Room"));
         System.out.println("Double Room: " + inventory.getAvailability("Double Room"));
         System.out.println("Suite Room: " + inventory.getAvailability("Suite Room"));
+
+        // ===================================
+        // Use Case 11: Concurrent Booking Simulation (Thread Safety)
+        // ===================================
+        BookingRequestQueue concurrentQueue = new BookingRequestQueue();
+
+        System.out.println("\n--- Concurrent Booking Simulation ---");
+
+        concurrentQueue.enqueueRequest(new Reservation("Dave", "Single Room"));
+        concurrentQueue.enqueueRequest(new Reservation("Eva", "Single Room"));
+        concurrentQueue.enqueueRequest(new Reservation("Frank", "Single Room"));
+
+        ConcurrentBookingProcessor processor =
+                new ConcurrentBookingProcessor(concurrentQueue, inventory);
+
+        Thread t1 = new Thread(processor);
+        Thread t2 = new Thread(processor);
+        Thread t3 = new Thread(processor);
+
+        t1.start();
+        t2.start();
+        t3.start();
+
+        t1.join();
+        t2.join();
+        t3.join();
+
+        System.out.println("\n--- Final Inventory After Concurrency ---");
+        System.out.println("Single Room: " + inventory.getAvailability("Single Room"));
     }
 }
 
-/**
- * Use Case 9: Custom Exception
- */
-class InvalidBookingException extends Exception {
-    public InvalidBookingException(String message) {
-        super(message);
+/* =============================
+   Use Case 11: Concurrent Processor
+   ============================= */
+class ConcurrentBookingProcessor implements Runnable {
+
+    private BookingRequestQueue queue;
+    private RoomInventory inventory;
+
+    public ConcurrentBookingProcessor(BookingRequestQueue queue,
+                                      RoomInventory inventory) {
+        this.queue = queue;
+        this.inventory = inventory;
+    }
+
+    public void run() {
+
+        while (true) {
+
+            Reservation res = queue.dequeueRequest();
+
+            if (res == null) {
+                break;
+            }
+
+            process(res);
+        }
+    }
+
+    private void process(Reservation res) {
+
+        synchronized (inventory) {
+
+            int stock = inventory.getAvailability(res.getRoomType());
+
+            if (stock > 0) {
+
+                inventory.updateAvailability(res.getRoomType(), stock - 1);
+
+                System.out.println(Thread.currentThread().getName() +
+                        " CONFIRMED: " + res.getGuestName());
+            } else {
+
+                System.out.println(Thread.currentThread().getName() +
+                        " FAILED: " + res.getGuestName());
+            }
+        }
     }
 }
 
-/**
- * Use Case 9: Validator
- */
-class InvalidBookingValidator {
+/* =============================
+   Booking Request Queue (FINAL – Thread Safe)
+   ============================= */
+class BookingRequestQueue {
 
-    public void validate(Reservation res, RoomInventory inventory)
-            throws InvalidBookingException {
+    private Queue<Reservation> queue = new LinkedList<>();
 
-        // Validate room type
-        if (!inventory.containsRoomType(res.getRoomType())) {
-            throw new InvalidBookingException("Invalid Room Type: " + res.getRoomType());
-        }
+    public synchronized void enqueueRequest(Reservation res) {
+        queue.add(res);
+        System.out.println("Enqueued: " + res.getGuestName());
+    }
 
-        // Validate availability
-        if (inventory.getAvailability(res.getRoomType()) <= 0) {
-            throw new InvalidBookingException("No availability for " + res.getRoomType());
-        }
+    public synchronized Reservation dequeueRequest() {
+        return queue.poll();
+    }
 
-        // Validate guest name
-        if (res.getGuestName() == null || res.getGuestName().trim().isEmpty()) {
-            throw new InvalidBookingException("Invalid Guest Name");
-        }
+    public synchronized boolean hasPendingRequests() {
+        return !queue.isEmpty();
     }
 }
 
-/**
- * Use Case 6: Allocation Service
- */
+/* =============================
+   Use Case 10: Cancellation Service
+   ============================= */
+class CancellationService {
+
+    private RoomInventory inventory;
+    private Stack<String> rollbackStack = new Stack<>();
+
+    public CancellationService(RoomInventory inventory) {
+        this.inventory = inventory;
+    }
+
+    public void cancelBooking(String reservationId,
+                              Map<String, Reservation> confirmedBookings,
+                              BookingHistory history) {
+
+        if (!confirmedBookings.containsKey(reservationId)) {
+            System.out.println("CANCELLATION FAILED: Reservation does not exist");
+            return;
+        }
+
+        Reservation res = confirmedBookings.get(reservationId);
+
+        int current = inventory.getAvailability(res.getRoomType());
+        inventory.updateAvailability(res.getRoomType(), current + 1);
+
+        rollbackStack.push(res.getRoomType());
+
+        confirmedBookings.remove(reservationId);
+
+        history.addReservation(
+                new Reservation(reservationId + "-CANCELLED",
+                        res.getGuestName(),
+                        res.getRoomType())
+        );
+
+        System.out.println("CANCELLED: " + res.getGuestName());
+    }
+}
+
+/* =============================
+   Use Case 8: Booking History
+   ============================= */
+class BookingHistory {
+
+    private List<Reservation> reservations = new ArrayList<>();
+
+    public void addReservation(Reservation reservation) {
+        reservations.add(reservation);
+    }
+
+    public List<Reservation> getReservations() {
+        return Collections.unmodifiableList(reservations);
+    }
+}
+
+/* =============================
+   Use Case 6: Allocation Service
+   ============================= */
 class RoomAllocationService {
 
     private RoomInventory inventory;
@@ -130,42 +263,25 @@ class RoomAllocationService {
         this.inventory = inventory;
     }
 
-    public void processAllocation(Reservation request) {
+    public boolean processAllocation(Reservation request) {
 
         int stock = inventory.getAvailability(request.getRoomType());
 
-        inventory.updateAvailability(request.getRoomType(), stock - 1);
+        if (stock > 0) {
+            inventory.updateAvailability(request.getRoomType(), stock - 1);
 
-        System.out.println("CONFIRMED: " + request.getGuestName() +
-                " (" + request.getRoomType() + ")");
+            System.out.println("CONFIRMED: " + request.getGuestName());
+            return true;
+        }
+
+        System.out.println("FAILED: " + request.getGuestName());
+        return false;
     }
 }
 
-/**
- * Use Case 5: Booking Queue
- */
-class BookingRequestQueue {
-
-    private Queue<Reservation> queue = new LinkedList<>();
-
-    public void enqueueRequest(Reservation res) {
-        queue.add(res);
-        System.out.println("Enqueued: " + res.getGuestName() +
-                " (" + res.getRoomType() + ")");
-    }
-
-    public Reservation dequeueRequest() {
-        return queue.poll();
-    }
-
-    public boolean hasPendingRequests() {
-        return !queue.isEmpty();
-    }
-}
-
-/**
- * Reservation Model
- */
+/* =============================
+   Reservation
+   ============================= */
 class Reservation {
 
     private String reservationId;
@@ -181,11 +297,16 @@ class Reservation {
     public String getReservationId() { return reservationId; }
     public String getGuestName() { return guestName; }
     public String getRoomType() { return roomType; }
+
+    @Override
+    public String toString() {
+        return reservationId + " | " + guestName + " | " + roomType;
+    }
 }
 
-/**
- * Use Case 3: Inventory
- */
+/* =============================
+   Use Case 3: Inventory
+   ============================= */
 class RoomInventory {
 
     private Map<String, Integer> inventory = new HashMap<>();
@@ -199,73 +320,29 @@ class RoomInventory {
     }
 
     public void updateAvailability(String roomType, int count) {
-        if (count < 0) {
-            throw new IllegalArgumentException("Inventory cannot be negative");
-        }
         inventory.put(roomType, count);
     }
-
-    public boolean containsRoomType(String roomType) {
-        return inventory.containsKey(roomType);
-    }
 }
 
-/**
- * Use Case 4: Search Service
- */
-class RoomSearchService {
-
-    private RoomInventory inventory;
-
-    public RoomSearchService(RoomInventory inventory) {
-        this.inventory = inventory;
-    }
-
-    public void performSearch(List<Room> rooms) {
-
-        for (Room room : rooms) {
-
-            int count = inventory.getAvailability(room.getRoomType());
-
-            if (count > 0) {
-                System.out.println(room.getRoomType() + ": " +
-                        count + " available at $" + room.getPrice());
-            }
-        }
-        System.out.println();
-    }
-}
-
-/**
- * Use Case 2: Room Model
- */
+/* =============================
+   Use Case 2: Room Model
+   ============================= */
 abstract class Room {
-
-    private int beds;
-    private double price;
-
-    public Room(int beds, double price) {
-        this.beds = beds;
-        this.price = price;
-    }
-
-    public int getBeds() { return beds; }
-    public double getPrice() { return price; }
 
     public abstract String getRoomType();
 }
 
 class SingleRoom extends Room {
-    public SingleRoom() { super(1, 80); }
+    public SingleRoom() { super(); }
     public String getRoomType() { return "Single Room"; }
 }
 
 class DoubleRoom extends Room {
-    public DoubleRoom() { super(2, 120); }
+    public DoubleRoom() { super(); }
     public String getRoomType() { return "Double Room"; }
 }
 
 class SuiteRoom extends Room {
-    public SuiteRoom() { super(3, 250); }
+    public SuiteRoom() { super(); }
     public String getRoomType() { return "Suite Room"; }
 }
