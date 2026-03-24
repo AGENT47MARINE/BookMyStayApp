@@ -3,67 +3,72 @@
 This project presents the design and implementation of a Hotel Booking Management System to illustrate the practical application of Core Java and fundamental data structures in real-world scenarios. The system is developed incrementally, with each use case introducing a specific concept that addresses common software engineering challenges such as fair request handling, inventory consistency, and prevention of double-booking. By focusing on core logic and system behavior rather than user interface concerns, the project enables learners to understand not only how data structures are used, but why they are essential in scalable and maintainable software systems.
 
 
-Use Case 10: Booking Cancellation & Inventory Rollback
+Use Case 12: Data Persistence & System Recovery
 -
+
 **Goal:** 
 
-Enable safe cancellation of confirmed bookings by correctly reversing system state changes, ensuring inventory consistency and predictable recovery behavior.
+Introduce persistence and recovery concepts by ensuring that critical system state survives application restarts, transitioning learners from in-memory thinking to durable system design.
 
 **Actor:**
 
-Guest – initiates a cancellation request for an existing booking.
+System – initiates save and restore operations during shutdown and startup.
 
-Cancellation Service – validates cancellations and performs controlled rollback operations.
+Persistence Service – handles storing and retrieving system state from persistent storage.
 
 **Flow:**
 
-Guest initiates a cancellation request.
+The system prepares for shutdown.
 
-The system validates the reservation to ensure it exists and is cancellable.
+Current booking and inventory state is serialized into a persistent format.
 
-The allocated room ID is recorded in a rollback structure.
+Serialized data is written to a file.
 
-Inventory count for the corresponding room type is incremented.
+System restarts.
 
-Booking history is updated to reflect the cancellation.
+Persisted data is loaded from the file.
 
-System state is restored consistently.
+Inventory and booking state are restored into memory.
+
+System resumes operation with recovered state.
 
 **Key Concepts Used**
 
-State Reversal - Cancellation requires undoing previously completed operations. The system must revert inventory and booking state without introducing inconsistencies.
+Stateful Applications - A stateful application maintains data beyond a single execution cycle. Business systems must preserve state to ensure continuity and correctness.
 
-Stack Data Structure - A Stack<String> is used to track recently released room IDs. Stacks follow a Last-In-First-Out (LIFO) order, which naturally models rollback behavior.
+Persistence - Persistence refers to storing application state in a durable medium. This prevents data loss caused by restarts, crashes, or redeployments.
 
-LIFO Rollback Logic - The most recent allocation is the first to be reversed. This aligns with real-world undo operations and simplifies recovery logic.
+Serialization - Serialization converts in-memory objects into a format suitable for storage. This allows complex data structures to be written to files and later reconstructed.
 
-Controlled Mutation - State changes during cancellation are performed in a strict, predefined order. This prevents partial rollbacks and protects system integrity.
+Deserialization - Deserialization restores objects from persisted data back into memory. Correct deserialization is essential for accurate system recovery.
 
-Inventory Restoration - Inventory counts are incremented immediately after cancellation. This ensures availability accurately reflects the current system state.
+Inventory Snapshot - The inventory state is captured at a point in time. Restoring this snapshot ensures availability reflects the last known valid state.
 
-Validation of Cancellation Requests - The system verifies that a reservation exists before allowing cancellation. Invalid or duplicate cancellation attempts are rejected safely.
+Failure Tolerance - The system handles missing or corrupted persistence data safely. This prevents crashes and allows the application to start in a known, valid state.
+
+Preparation for Database Integration - File-based persistence introduces durability concepts without database complexity. This prepares learners conceptually for future database-backed systems.
 
 **Key Requirements**
 
-Allow cancellation of confirmed bookings only.
+Persist booking history and inventory state to a file.
 
-Validate reservation existence before performing rollback.
+Restore persisted data during application startup.
 
-Release allocated room IDs back to the availability pool.
+Ensure the restored state accurately reflects the last saved state.
 
-Restore inventory counts accurately and immediately.
+Handle missing or corrupted persistence files gracefully.
 
-Prevent cancellation of non-existent or already cancelled bookings.
+Allow the system to continue operating safely after recovery.
 
 **Key Benefits**
 
-Safe recovery of inventory after cancellations
+No data loss across application restarts
 
-Consistent system state across the booking lifecycle
+More realistic and production-aligned system behavior
 
-Controlled and predictable rollback behavior
+Smooth conceptual transition toward database-backed systems
 
 **Drawbacks of Previous Use Case**
 
-Use Case 9 focused on input validation but did not address reversing valid operations.
-Without rollback support, confirmed bookings could not be safely undone.
+Earlier use cases relied entirely on in-memory data structures.
+As a result, all business state was lost when the application terminated.
